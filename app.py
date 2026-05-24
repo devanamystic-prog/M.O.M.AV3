@@ -55,12 +55,11 @@ except Exception as e:
     st.code(str(e))
     st.stop()
 
-st.set_page_config(page_title="M.O.M.A. v2", page_icon="🧠")
+st.set_page_config(page_title="M.O.M.A.", page_icon="🧠")
 st.image("logo.PNG", width=300)
 st.title("🧠 M.O.M.A.")
-st.subheader("Media Objectivity & Manipulation Auditor")
+st.markdown("*Media Objectivity & Manipulation Auditor*")
 st.caption("Protocolo Forense")
-
 
 opcao = st.radio("Tipo de entrada:", ["Texto", "Imagem (print)"])
 
@@ -94,6 +93,7 @@ else:
 
 if st.button("Limpar"):
     st.rerun()
+
 
 
     
