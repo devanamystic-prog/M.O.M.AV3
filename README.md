@@ -1,2 +1,4 @@
-# M.O.M.AV3
-Motor de análise forense de narrativas
+# M.O.M.A 
+Media Objectivity & Manipulation Auditor
+
+Análises Forenses
