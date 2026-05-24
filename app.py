@@ -1,5 +1,6 @@
 import streamlit as st
 import google.generativeai as genai
+from PIL import Image
 
 MOMA_PROMPT = """CONTEXTO: Você é o M.O.M.A. v2, motor de análise forense de narrativas. Sua função é auditar qualquer texto (artigos, notícias, livros, contratos, discursos ou prints) através de um protocolo rígido de 10 camadas lógicas, com neutralidade absoluta.
 
@@ -57,21 +58,40 @@ except Exception as e:
 st.set_page_config(page_title="M.O.M.A. v2", page_icon="🧠")
 st.title("🧠 M.O.M.A. v2 - Protocolo Forense")
 
-entrada = st.text_area("Cole o texto para auditoria:", height=200)
+opcao = st.radio("Tipo de entrada:", ["Texto", "Imagem (print)"])
 
-if st.button("Auditar"):
-    if entrada:
-        with st.spinner("Processando auditoria forense..."):
-            try:
-                response = model.generate_content(entrada)
-                st.json(response.text)
-            except Exception as e:
-                st.warning("🧠 O protocolo forense entrou em modo de espera. Tente novamente em breve.")
-    else:
-        st.warning("Cole um texto para auditar.")
+if opcao == "Texto":
+    entrada = st.text_area("Cole o texto para auditoria:", height=200)
+    if st.button("Auditar"):
+        if entrada:
+            with st.spinner("Processando auditoria forense..."):
+                try:
+                    response = model.generate_content(entrada)
+                    st.json(response.text)
+                except Exception as e:
+                    st.warning("🧠 O protocolo forense entrou em modo de espera. Tente novamente em breve.")
+        else:
+            st.warning("Cole um texto para auditar.")
+
+else:
+    imagem = st.file_uploader("Suba o print para auditoria:", type=["png", "jpg", "jpeg"])
+    if st.button("Auditar"):
+        if imagem:
+            with st.spinner("Processando auditoria forense..."):
+                try:
+                    img = Image.open(imagem)
+                    st.image(img, caption="Print enviado", use_column_width=True)
+                    response = model.generate_content(img)
+                    st.json(response.text)
+                except Exception as e:
+                    st.warning("🧠 O protocolo forense entrou em modo de espera. Tente novamente em breve.")
+        else:
+            st.warning("Suba uma imagem para auditar.")
 
 if st.button("Limpar"):
     st.rerun()
+
+    
 
   
 
