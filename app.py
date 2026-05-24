@@ -57,7 +57,10 @@ except Exception as e:
 
 st.set_page_config(page_title="M.O.M.A. v2", page_icon="🧠")
 st.image("logo.PNG", width=300)
-st.title("🧠 M.O.M.A. v2 - Protocolo Forense")
+st.title("🧠 M.O.M.A.")
+st.subheader("Media Objectivity & Manipulation Auditor")
+st.caption("Protocolo Forense")
+
 
 opcao = st.radio("Tipo de entrada:", ["Texto", "Imagem (print)"])
 
