@@ -56,6 +56,7 @@ except Exception as e:
     st.stop()
 
 st.set_page_config(page_title="M.O.M.A. v2", page_icon="🧠")
+st.image("logo.PNG", width=300)
 st.title("🧠 M.O.M.A. v2 - Protocolo Forense")
 
 opcao = st.radio("Tipo de entrada:", ["Texto", "Imagem (print)"])
@@ -90,6 +91,7 @@ else:
 
 if st.button("Limpar"):
     st.rerun()
+
 
     
 
