@@ -9,7 +9,7 @@ import json
 
 MOMA_PROMPT = """
 CONTEXTO:
-Você é o M.O.M.A. v2, motor de análise forense de narrativas.
+Você é o M.O.M.A., motor de análise forense de narrativas.
 
 Sua função é auditar qualquer texto ou imagem através de um protocolo rígido de 10 camadas lógicas, com neutralidade absoluta.
 
@@ -42,9 +42,9 @@ ESQUEMA JSON OBRIGATÓRIO:
     "c7_intencao": "...",
     "c8_outro_lado": "...",
     "c9_reescrita_neutra": "...",
-    "c10_calibracao_justificativa": "...",
-    "diagnostico_final": "Conclusão forense detalhada."
-  }
+    "c10_calibracao_justificativa": "..."
+  },
+  "diagnostico_final": "Conclusão forense detalhada."
 }
 """
 
@@ -53,6 +53,7 @@ ESQUEMA JSON OBRIGATÓRIO:
 # =========================
 
 try:
+
     api_key = st.secrets["GOOGLE_API_KEY"]
 
     genai.configure(api_key=api_key)
@@ -65,8 +66,7 @@ try:
 except Exception:
 
     st.warning(
-        "🧠 O núcleo do protocolo não conseguiu despertar.\n\n"
-        "Verifique as configurações da API."
+        "🧠 O núcleo analítico não conseguiu despertar."
     )
 
     st.stop()
@@ -90,11 +90,9 @@ st.image("logo.PNG", width=300)
 st.title("🧠 M.O.M.A.")
 
 st.markdown("""
-### Media Objectivity & Manipulation Auditor
+# Media Objectivity & Manipulation Auditor
 
-#### Protocolo Forense
-
-Analise textos e imagens através do protocolo analítico de 10 camadas do M.O.M.A.
+### Protocolo Forense
 """)
 
 # =========================
@@ -102,21 +100,21 @@ Analise textos e imagens através do protocolo analítico de 10 camadas do M.O.M
 # =========================
 
 opcao = st.radio(
-    "🧠 Selecione o tipo de auditoria:",
+    "Tipo de entrada:",
     [
         "Texto",
-        "Imagem (Print)"
+        "Imagem (print)"
     ]
 )
 
 # =========================
-# AUDITORIA DE TEXTO
+# TEXTO
 # =========================
 
 if opcao == "Texto":
 
     entrada = st.text_area(
-        "📄 Cole o texto para auditoria:",
+        "Cole o texto para auditoria:",
         height=250
     )
 
@@ -156,13 +154,13 @@ if opcao == "Texto":
             )
 
 # =========================
-# AUDITORIA DE IMAGEM
+# IMAGEM
 # =========================
 
 else:
 
     arquivo = st.file_uploader(
-        "🖼️ Envie uma imagem para auditoria:",
+        "Envie um print:",
         type=["png", "jpg", "jpeg"]
     )
 
@@ -178,7 +176,7 @@ else:
 
                     st.image(
                         img,
-                        caption="Imagem enviada",
+                        caption="Print enviado",
                         width=300
                     )
 
