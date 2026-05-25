@@ -104,4 +104,4 @@ else:
             st.warning("Envie uma imagem.")
 
 if st.button("🔄 Limpar tudo"):
-    st.rerun()
+    y
