@@ -65,31 +65,34 @@ opcao = st.radio("Tipo de entrada:", ["Texto", "Imagem (print)"])
 
 if opcao == "Texto":
         entrada = st.text_area("Cole o texto para auditoria:", height=200)
-        if st.button("Auditar"):
+        if st.button("Auditar Texto"):
             if entrada:
-                with st.spinner("Processando auditoria..."):
+                with st.spinner("Analisando texto..."):
                     try:
                         response = model.generate_content(entrada)
-                        texto_limpo = response.text.replace("```json", "").replace("```", "").strip()
-                        st.json(texto_limpo)
+                        txt = response.text.replace("```json", "").replace("```", "").strip()
+                        st.json(txt)
                     except Exception as e:
-                        st.error(f"Erro na análise: {e}")
+                        st.error(f"Erro: {e}")
             else:
-                st.warning("Por favor, cole um texto primeiro.")
-else:
-    imagem = st.file_uploader("Suba o print para auditoria:", type=["png", "jpg", "jpeg"])
-    if st.button("Auditar"):
-        if imagem:
-            with st.spinner("Processando auditoria forense..."):
-                try:
-                    img = Image.open(imagem)
-                    st.image(img, caption="Print enviado", use_column_width=True)
-                    response = model.generate_content(img)
-                    st.json(response.text)
-                except Exception as e:
-                    st.warning("🧠 O protocolo forense entrou em modo de espera. Tente novamente em breve.")
-        else:
-            st.warning("Suba uma imagem para auditar.")
+                st.warning("Cole um texto.")
+
+    else:
+        imagem = st.file_uploader("Suba o print para análise:", type=["png", "jpg", "jpeg"])
+        if st.button("Auditar Imagem"):
+            if imagem:
+                with st.spinner("Analisando imagem..."):
+                    try:
+                        from PIL import Image
+                        img = Image.open(imagem)
+                        st.image(img, caption="Upload realizado")
+                        response = model.generate_content(["Analise esta imagem conforme o protocolo MOMA", img])
+                        txt = response.text.replace("```json", "").replace("```", "").strip()
+                        st.json(txt)
+                    except Exception as e:
+                        st.error(f"Erro na imagem: {e}")
+            else:
+                st.warning("Suba uma imagem primeiro.")
 
 if st.button("Limpar"):
     st.rerun()
