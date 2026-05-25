@@ -3,10 +3,6 @@ import google.generativeai as genai
 from PIL import Image
 import json
 
-# =========================
-# PROMPT DO M.O.M.A.
-# =========================
-
 MOMA_PROMPT = """
 CONTEXTO:
 Você é o M.O.M.A., motor de análise forense de narrativas.
@@ -48,32 +44,16 @@ ESQUEMA JSON OBRIGATÓRIO:
 }
 """
 
-# =========================
-# CONFIGURAÇÃO DA API
-# =========================
-
 try:
-
     api_key = st.secrets["GOOGLE_API_KEY"]
-
     genai.configure(api_key=api_key)
-
     model = genai.GenerativeModel(
-        "gemini-1.5-flash",
+        "gemini-2.0-flash",
         system_instruction=MOMA_PROMPT
     )
-
 except Exception:
-
-    st.warning(
-        "🧠 O núcleo analítico não conseguiu despertar."
-    )
-
+    st.warning("🧠 O núcleo analítico não conseguiu despertar.")
     st.stop()
-
-# =========================
-# CONFIGURAÇÃO DA PÁGINA
-# =========================
 
 st.set_page_config(
     page_title="M.O.M.A.",
@@ -81,142 +61,72 @@ st.set_page_config(
     layout="centered"
 )
 
-# =========================
-# TOPO
-# =========================
-
 st.image("logo.PNG", width=300)
-
 st.title("🧠 M.O.M.A.")
-
-st.markdown("""
-# Media Objectivity & Manipulation Auditor
-
-### Protocolo Forense
-""")
-
-# =========================
-# TIPO DE ENTRADA
-# =========================
+st.markdown("*Media Objectivity & Manipulation Auditor*")
+st.caption("Protocolo Forense")
 
 opcao = st.radio(
     "Tipo de entrada:",
-    [
-        "Texto",
-        "Imagem (print)"
-    ]
+    ["Texto", "Imagem (print)"]
 )
 
-# =========================
-# TEXTO
-# =========================
-
 if opcao == "Texto":
-
-    entrada = st.text_area(
-        "Cole o texto para auditoria:",
-        height=250
-    )
-
+    entrada = st.text_area("Cole o texto para auditoria:", height=250)
     if st.button("🧠 Auditar Texto"):
-
         if entrada:
-
             with st.spinner("🧠 Executando protocolo forense..."):
-
                 try:
-
                     response = model.generate_content(entrada)
-
                     txt = (
                         response.text
                         .replace("```json", "")
                         .replace("```", "")
                         .strip()
                     )
-
                     st.success("✅ Auditoria concluída")
-
                     st.json(json.loads(txt))
-
-                except Exception:
-
+                except Exception as e:
                     st.warning(
                         "🧠 O protocolo entrou em repouso.\n\n"
                         "Os núcleos analíticos estão se reorganizando.\n"
                         "Tente novamente mais tarde."
                     )
-
         else:
-
-            st.warning(
-                "📄 Insira um texto para iniciar a auditoria."
-            )
-
-# =========================
-# IMAGEM
-# =========================
+            st.warning("📄 Insira um texto para iniciar a auditoria.")
 
 else:
-
-    arquivo = st.file_uploader(
-        "Envie um print:",
-        type=["png", "jpg", "jpeg"]
-    )
-
+    arquivo = st.file_uploader("Envie um print:", type=["png", "jpg", "jpeg"])
     if st.button("🧠 Auditar Imagem"):
-
         if arquivo:
-
             with st.spinner("🧠 Executando protocolo visual..."):
-
                 try:
-
                     img = Image.open(arquivo)
-
-                    st.image(
-                        img,
-                        caption="Print enviado",
-                        width=300
-                    )
-
+                    st.image(img, caption="Print enviado", width=300)
                     response = model.generate_content([
                         "Faça uma auditoria forense completa desta imagem.",
                         img
                     ])
-
                     txt = (
                         response.text
                         .replace("```json", "")
                         .replace("```", "")
                         .strip()
                     )
-
                     st.success("✅ Auditoria concluída")
-
                     st.json(json.loads(txt))
-
-                except Exception:
-
+                except Exception as e:
                     st.warning(
                         "🧠 O protocolo visual entrou em repouso.\n\n"
                         "Os núcleos analíticos estão se reorganizando.\n"
                         "Tente novamente mais tarde."
                     )
-
         else:
-
-            st.warning(
-                "🖼️ Envie uma imagem para iniciar a auditoria."
-            )
-
-# =========================
-# LIMPAR
-# =========================
+            st.warning("🖼️ Envie uma imagem para iniciar a auditoria.")
 
 if st.button("🔄 Limpar"):
-
     st.rerun()
+
 
 
 
