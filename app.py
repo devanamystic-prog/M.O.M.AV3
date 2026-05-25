@@ -53,25 +53,40 @@ Use exatamente este formato:
 }
 """
 
-# ==================== VALIDAÇÃO MAIS FORTE (melhorada) ====================
+# ==================== VALIDAÇÃO ====================
 def validar_json_pydantic(texto_resposta: str) -> MomaResponse:
     texto = texto_resposta.strip()
-    
-    # Remove tudo que estiver antes do primeiro { e depois do último }
     match = re.search(r'\{[\s\S]*\}', texto)
     if not match:
         raise ValueError("Não encontrei JSON na resposta.")
-    
     json_str = match.group(0)
-    
-    # Limpeza extra
     json_str = re.sub(r'^```(?:json)?\s*|\s*```$', '', json_str, flags=re.MULTILINE | re.IGNORECASE)
-    json_str = json_str.strip()
-    
     return MomaResponse.model_validate_json(json_str)
 
-# ==================== EXIBIÇÃO BONITA ====================
+# ==================== EXIBIÇÃO BONITA + ÍNDICE DE DISTORÇÃO ====================
 def exibir_analise(resultado: MomaResponse):
+    # === ÍNDICE DE DISTORÇÃO (no topo, como você pediu) ===
+    indice = resultado.indice_distorcao
+    if indice <= 30:
+        cor = "🟢"
+        nivel = "Baixa distorção"
+    elif indice <= 70:
+        cor = "🟡"
+        nivel = "Distorção moderada"
+    else:
+        cor = "🔴"
+        nivel = "Alta distorção"
+
+    st.markdown(f"""
+## 👁️ Índice Narrativo
+
+# {cor} {indice}/100
+
+### {nivel}
+""")
+    st.divider()
+
+    # === O RESTO FICA EXATAMENTE IGUAL AO QUE VOCÊ GOSTOU ===
     st.success("✅ Auditoria concluída com sucesso!")
     
     st.markdown('<h3 style="color:#4CAF50;">📋 Resumo</h3>', unsafe_allow_html=True)
