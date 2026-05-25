@@ -3,8 +3,33 @@ import google.generativeai as genai
 from PIL import Image
 import json
 import re
+from pydantic import BaseModel
+from typing import List
 
-# ==================== PROMPT M.O.M.A. (VERSÃO HUMANA) ====================
+# ==================== MODELOS PYDANTIC (validação forte) ====================
+class TecnicaPersuasao(BaseModel):
+    tecnica: str
+    exemplo: str
+    efeito: str
+
+class AnaliseDetalhada(BaseModel):
+    fatos: List[str]
+    tecnicas_persuasao: List[TecnicaPersuasao]
+    lacunas: List[str]
+    aspectos_emocionais: List[str]
+    agente_e_alvo: str
+    intencao: str
+    outro_lado: str
+    versao_neutra: str
+    justificativa: str
+
+class MomaResponse(BaseModel):
+    indice_distorcao: int
+    veredito_resumo: str
+    analise_detalhada: AnaliseDetalhada
+    diagnostico_final: str
+
+# ==================== PROMPT M.O.M.A. ====================
 MOMA_PROMPT = """
 CONTEXTO:
 Você é o M.O.M.A., um auditor honesto e fácil de entender de conteúdos da internet.
@@ -15,31 +40,49 @@ Use sempre linguagem natural, direta e fácil. Nada de termos técnicos complica
 
 Responda APENAS com um JSON válido, sem nenhuma explicação antes ou depois.
 
-ESQUEMA JSON OBRIGATÓRIO:
-
+ESQUEMA JSON OBRIGATÓRIO: (siga exatamente esta estrutura)
 {
   "indice_distorcao": 0,
   "veredito_resumo": "Resumo curto e direto do que você encontrou",
   "analise_detalhada": {
-    "fatos": ["Aqui você lista os fatos principais de forma simples"],
+    "fatos": ["..."],
     "tecnicas_persuasao": [
       {
-        "tecnica": "Nome simples da técnica",
-        "exemplo": "Trecho que usa essa técnica",
-        "efeito": "O que isso causa na pessoa que lê"
+        "tecnica": "...",
+        "exemplo": "...",
+        "efeito": "..."
       }
     ],
-    "lacunas": ["O que está faltando ou sendo omitido, explicado de forma clara"],
-    "aspectos_emocionais": ["Como o conteúdo mexe com as emoções da gente"],
-    "agente_e_alvo": "Quem está falando e quem é o público-alvo",
-    "intencao": "Qual é a intenção real por trás desse conteúdo",
-    "outro_lado": "O que a outra versão da história diria",
-    "versao_neutra": "Uma versão mais equilibrada e justa do mesmo conteúdo",
-    "justificativa": "Por que você chegou nessa conclusão"
+    "lacunas": ["..."],
+    "aspectos_emocionais": ["..."],
+    "agente_e_alvo": "...",
+    "intencao": "...",
+    "outro_lado": "...",
+    "versao_neutra": "...",
+    "justificativa": "..."
   },
-  "diagnostico_final": "Conclusão clara, objetiva e em um parágrafo só"
+  "diagnostico_final": "..."
 }
 """
+
+# ==================== FUNÇÃO DE VALIDAÇÃO COM PYDANTIC ====================
+def validar_json_pydantic(texto_resposta: str) -> MomaResponse:
+    """Valida e converte a resposta do Gemini usando Pydantic."""
+    texto = texto_resposta.strip()
+    
+    # Remove possíveis blocos ```json
+    texto = re.sub(r'^```(?:json)?\s*|\s*```$', '', texto, flags=re.MULTILINE | re.IGNORECASE)
+    texto = texto.strip()
+    
+    # Extrai o JSON
+    match = re.search(r'\{[\s\S]*\}', texto)
+    if not match:
+        raise ValueError("Não foi possível encontrar um JSON na resposta do Gemini.")
+    
+    json_str = match.group(0)
+    
+    # Validação forte com Pydantic
+    return MomaResponse.model_validate_json(json_str)
 
 # ==================== CONFIGURAÇÃO ====================
 st.set_page_config(
@@ -83,16 +126,10 @@ if opcao == "Texto":
             with st.spinner("Analisando de forma clara e honesta..."):
                 try:
                     response = model.generate_content(entrada)
-                    txt = response.text.strip()
-
-                    json_match = re.search(r'\{.*\}', txt, re.DOTALL)
-                    if json_match:
-                        txt = json_match.group(0)
-
-                    resultado = json.loads(txt)
+                    resultado = validar_json_pydantic(response.text)
 
                     st.success("✅ Auditoria concluída")
-                    st.json(resultado)
+                    st.json(resultado.model_dump())
 
                 except Exception as e:
                     st.error(f"Erro ao processar: {e}")
@@ -112,9 +149,19 @@ else:
                     prompt_imagem = "Faça uma auditoria clara e honesta desta imagem seguindo o protocolo M.O.M.A."
 
                     response = model.generate_content([prompt_imagem, img])
-                    txt = response.text.strip()
+                    resultado = validar_json_pydantic(response.text)
 
-                    json_match = re.search(r'\{.*\}', txt, re.DOTALL)
+                    st.success("✅ Auditoria visual concluída")
+                    st.json(resultado.model_dump())
+
+                except Exception as e:
+                    st.error(f"Erro na análise da imagem: {e}")
+        else:
+            st.warning("Envie uma imagem para analisar.")
+
+# Botão limpar
+if st.button("🔄 Limpar tudo"):
+    st.rerun()
 
 
 
