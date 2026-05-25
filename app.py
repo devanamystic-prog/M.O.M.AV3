@@ -51,8 +51,8 @@ try:
         "gemini-2.0-flash",
         system_instruction=MOMA_PROMPT
     )
-except Exception:
-    st.warning("🧠 O núcleo analítico não conseguiu despertar.")
+except Exception as e:
+    st.error(str(e))
     st.stop()
 
 st.set_page_config(
@@ -87,11 +87,7 @@ if opcao == "Texto":
                     st.success("✅ Auditoria concluída")
                     st.json(json.loads(txt))
                 except Exception as e:
-                    st.warning(
-                        "🧠 O protocolo entrou em repouso.\n\n"
-                        "Os núcleos analíticos estão se reorganizando.\n"
-                        "Tente novamente mais tarde."
-                    )
+                    st.error(str(e))
         else:
             st.warning("📄 Insira um texto para iniciar a auditoria.")
 
@@ -116,16 +112,13 @@ else:
                     st.success("✅ Auditoria concluída")
                     st.json(json.loads(txt))
                 except Exception as e:
-                    st.warning(
-                        "🧠 O protocolo visual entrou em repouso.\n\n"
-                        "Os núcleos analíticos estão se reorganizando.\n"
-                        "Tente novamente mais tarde."
-                    )
+                    st.error(str(e))
         else:
             st.warning("🖼️ Envie uma imagem para iniciar a auditoria.")
 
 if st.button("🔄 Limpar"):
     st.rerun()
+
 
 
 
