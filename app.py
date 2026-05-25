@@ -6,7 +6,7 @@ import re
 from pydantic import BaseModel
 from typing import List
 
-# ==================== MODELOS PYDANTIC (validação forte) ====================
+# ==================== MODELOS PYDANTIC ====================
 class TecnicaPersuasao(BaseModel):
     tecnica: str
     exemplo: str
@@ -29,7 +29,7 @@ class MomaResponse(BaseModel):
     analise_detalhada: AnaliseDetalhada
     diagnostico_final: str
 
-# ==================== PROMPT M.O.M.A. ====================
+# ==================== PROMPT ====================
 MOMA_PROMPT = """
 CONTEXTO:
 Você é o M.O.M.A., um auditor honesto e fácil de entender de conteúdos da internet.
@@ -39,129 +39,56 @@ Sua missão é analisar qualquer texto ou imagem e entregar uma análise clara, 
 Use sempre linguagem natural, direta e fácil. Nada de termos técnicos complicados.
 
 Responda APENAS com um JSON válido, sem nenhuma explicação antes ou depois.
-
-ESQUEMA JSON OBRIGATÓRIO: (siga exatamente esta estrutura)
-{
-  "indice_distorcao": 0,
-  "veredito_resumo": "Resumo curto e direto do que você encontrou",
-  "analise_detalhada": {
-    "fatos": ["..."],
-    "tecnicas_persuasao": [
-      {
-        "tecnica": "...",
-        "exemplo": "...",
-        "efeito": "..."
-      }
-    ],
-    "lacunas": ["..."],
-    "aspectos_emocionais": ["..."],
-    "agente_e_alvo": "...",
-    "intencao": "...",
-    "outro_lado": "...",
-    "versao_neutra": "...",
-    "justificativa": "..."
-  },
-  "diagnostico_final": "..."
-}
 """
 
-# ==================== FUNÇÃO DE VALIDAÇÃO COM PYDANTIC ====================
+# ==================== VALIDAÇÃO ====================
 def validar_json_pydantic(texto_resposta: str) -> MomaResponse:
-    """Valida e converte a resposta do Gemini usando Pydantic."""
     texto = texto_resposta.strip()
-    
-    # Remove possíveis blocos ```json
     texto = re.sub(r'^```(?:json)?\s*|\s*```$', '', texto, flags=re.MULTILINE | re.IGNORECASE)
     texto = texto.strip()
-    
-    # Extrai o JSON
     match = re.search(r'\{[\s\S]*\}', texto)
     if not match:
-        raise ValueError("Não foi possível encontrar um JSON na resposta do Gemini.")
-    
+        raise ValueError("Não foi possível encontrar um JSON na resposta.")
     json_str = match.group(0)
-    
-    # Validação forte com Pydantic
     return MomaResponse.model_validate_json(json_str)
 
-# ==================== CONFIGURAÇÃO ====================
-st.set_page_config(
-    page_title="M.O.M.A.",
-    page_icon="🧠",
-    layout="centered"
-)
-
-try:
-    api_key = st.secrets["GOOGLE_API_KEY"]
-    genai.configure(api_key=api_key)
-
-    generation_config = {
-        "temperature": 0.0,
-        "top_p": 0.95,
-        "response_mime_type": "application/json"
-    }
-
-    model = genai.GenerativeModel(
-        model_name="gemini-3.5-flash",
-        system_instruction=MOMA_PROMPT,
-        generation_config=generation_config
-    )
-except Exception as e:
-    st.error(f"Erro ao configurar API: {e}")
-    st.stop()
-
-# ==================== INTERFACE ====================
-st.image("logo.PNG", width=300)
-st.title("🧠 M.O.M.A.")
-st.markdown("*Media Objectivity & Manipulation Auditor*")
-st.caption("Análise clara e honesta")
-
-opcao = st.radio("Tipo de entrada:", ["Texto", "Imagem (print)"], horizontal=True)
-
-# ==================== ANÁLISE DE TEXTO ====================
-if opcao == "Texto":
-    entrada = st.text_area("Cole o texto para auditoria:", height=300)
-    if st.button("🧠 Auditar Texto", type="primary"):
-        if entrada.strip():
-            with st.spinner("Analisando de forma clara e honesta..."):
-                try:
-                    response = model.generate_content(entrada)
-                    resultado = validar_json_pydantic(response.text)
-
-                    st.success("✅ Auditoria concluída")
-                    st.json(resultado.model_dump())
-
-                except Exception as e:
-                    st.error(f"Erro ao processar: {e}")
-        else:
-            st.warning("Insira um texto para analisar.")
-
-# ==================== ANÁLISE DE IMAGEM ====================
-else:
-    arquivo = st.file_uploader("Envie um print ou imagem:", type=["png", "jpg", "jpeg", "webp"])
-    if st.button("🧠 Auditar Imagem", type="primary"):
-        if arquivo:
-            with st.spinner("Analisando imagem de forma clara..."):
-                try:
-                    img = Image.open(arquivo)
-                    st.image(img, caption="Imagem enviada", use_column_width=True)
-
-                    prompt_imagem = "Faça uma auditoria clara e honesta desta imagem seguindo o protocolo M.O.M.A."
-
-                    response = model.generate_content([prompt_imagem, img])
-                    resultado = validar_json_pydantic(response.text)
-
-                    st.success("✅ Auditoria visual concluída")
-                    st.json(resultado.model_dump())
-
-                except Exception as e:
-                    st.error(f"Erro na análise da imagem: {e}")
-        else:
-            st.warning("Envie uma imagem para analisar.")
-
-# Botão limpar
-if st.button("🔄 Limpar tudo"):
-    st.rerun()
+# ==================== EXIBIÇÃO COM ÍCONES, CORES E BOTÃO DE COPIAR ====================
+def exibir_analise(resultado: MomaResponse):
+    st.success("✅ Auditoria concluída com sucesso!")
+    
+    # Resumo
+    st.markdown('<h3 style="color:#4CAF50;">📋 Resumo</h3>', unsafe_allow_html=True)
+    st.markdown(f"**{resultado.veredito_resumo}**")
+    st.divider()
+    
+    # Fatos
+    st.markdown('<h3 style="color:#2196F3;">✅ Fatos principais</h3>', unsafe_allow_html=True)
+    for fato in resultado.analise_detalhada.fatos:
+        st.markdown(f"• {fato}")
+    st.divider()
+    
+    # Técnicas
+    st.markdown('<h3 style="color:#9C27B0;">🎯 Técnicas de persuasão</h3>', unsafe_allow_html=True)
+    for tec in resultado.analise_detalhada.tecnicas_persuasao:
+        st.markdown(f"**{tec.tecnica}**")
+        st.markdown(f"Exemplo: {tec.exemplo}")
+        st.markdown(f"Efeito: {tec.efeito}")
+        st.divider()
+    
+    # Lacunas
+    st.markdown('<h3 style="color:#FF9800;">⚠️ O que está faltando</h3>', unsafe_allow_html=True)
+    for lacuna in resultado.analise_detalhada.lacunas:
+        st.markdown(f"• {lacuna}")
+    st.divider()
+    
+    # Emocional
+    st.markdown('<h3 style="color:#E91E63;">❤️ Aspectos emocionais</h3>', unsafe_allow_html=True)
+    for emo in resultado.analise_detalhada.aspectos_emocionais:
+        st.markdown(f"• {emo}")
+    st.divider()
+    
+    # Agente + Intenção + Outro lado
+    st.markdown('<h3 style="color:#00BCD4;">👤 Quem fala e intenção</h
 
 
 
