@@ -64,29 +64,18 @@ st.caption("Protocolo Forense")
 opcao = st.radio("Tipo de entrada:", ["Texto", "Imagem (print)"])
 
 if opcao == "Texto":
-    entrada = st.text_area("Cole o texto para auditoria:", height=200)
-    if st.button("Auditar"):
-        if entrada:
-            with st.spinner("Processando auditoria forense..."):
-                try:
-                    response = model.generate_content(entrada)
-                    texto_limpo = response.text.replace("```json", "").replace("```", "").strip()
-                    st.json(texto_limpo)
-                except Exception as e:
-                    st.warning("🧠 O protocolo forense entrou em modo de espera.")
-        else:
-            st.warning("Cole um texto para auditar.")
-            
-                
-            
-                    
-                    
-                  
-                
-                    
-        else:
-            st.warning("Cole um texto para auditar.")
-
+        entrada = st.text_area("Cole o texto para auditoria:", height=200)
+        if st.button("Auditar"):
+            if entrada:
+                with st.spinner("Processando auditoria..."):
+                    try:
+                        response = model.generate_content(entrada)
+                        texto_limpo = response.text.replace("```json", "").replace("```", "").strip()
+                        st.json(texto_limpo)
+                    except Exception as e:
+                        st.error(f"Erro na análise: {e}")
+            else:
+                st.warning("Por favor, cole um texto primeiro.")
 else:
     imagem = st.file_uploader("Suba o print para auditoria:", type=["png", "jpg", "jpeg"])
     if st.button("Auditar"):
