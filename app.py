@@ -49,7 +49,7 @@ ESQUEMA JSON OBRIGATÓRIO:
 try:
     api_key = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel("gemini-2.0-flash", system_instruction=MOMA_PROMPT)
+    model = genai.GenerativeModel("gemini-1.5-flash", system_instruction=MOMA_PROMPT)
 except Exception as e:
     st.error("Erro ao carregar a API")
     st.code(str(e))
