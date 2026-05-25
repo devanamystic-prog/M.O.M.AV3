@@ -67,12 +67,21 @@ if opcao == "Texto":
     entrada = st.text_area("Cole o texto para auditoria:", height=200)
     if st.button("Auditar"):
         if entrada:
-            with st.spinner("Processando auditoria forense..."):
-                try:
-                    response = model.generate_content(entrada)
-                    st.json(response.text)
-                except Exception as e:
-                    st.warning("🧠 O protocolo forense entrou em modo de espera. Tente novamente em breve.")
+        with st.spinner("Processando auditoria forense..."):
+            try:
+                response = model.generate_content(entrada)
+                texto_limpo = response.text.replace("```json", "").replace("```", "").strip()
+                st.json(texto_limpo)
+            except Exception as e:
+                st.warning("🧠 O protocolo forense entrou em modo de espera. Tente novamente em breve.")
+            
+                
+            
+                    
+                    
+                  
+                
+                    
         else:
             st.warning("Cole um texto para auditar.")
 
