@@ -53,14 +53,21 @@ Use exatamente este formato:
 }
 """
 
-# ==================== VALIDAÇÃO ====================
+# ==================== VALIDAÇÃO MAIS FORTE (melhorada) ====================
 def validar_json_pydantic(texto_resposta: str) -> MomaResponse:
     texto = texto_resposta.strip()
+    
+    # Remove tudo que estiver antes do primeiro { e depois do último }
     match = re.search(r'\{[\s\S]*\}', texto)
     if not match:
         raise ValueError("Não encontrei JSON na resposta.")
+    
     json_str = match.group(0)
+    
+    # Limpeza extra
     json_str = re.sub(r'^```(?:json)?\s*|\s*```$', '', json_str, flags=re.MULTILINE | re.IGNORECASE)
+    json_str = json_str.strip()
+    
     return MomaResponse.model_validate_json(json_str)
 
 # ==================== EXIBIÇÃO BONITA ====================
@@ -108,43 +115,6 @@ def exibir_analise(resultado: MomaResponse):
     
     st.markdown('<h3 style="color:#4CAF50;">🏁 Diagnóstico final</h3>', unsafe_allow_html=True)
     st.markdown(f"**{resultado.diagnostico_final}**")
-
-    # ==================== BOTÃO DE COPIAR ====================
-    st.divider()
-    if st.button("📋 Copiar relatório completo", type="primary", use_container_width=True):
-        texto_copia = f"""🧠 M.O.M.A. - Análise Completa
-
-📋 RESUMO
-{resultado.veredito_resumo}
-
-✅ FATOS PRINCIPAIS
-""" + "\n• ".join(resultado.analise_detalhada.fatos) + f"""
-
-🎯 TÉCNICAS DE PERSUASÃO
-""" + "\n".join([f"• {t.tecnica}\n  Exemplo: {t.exemplo}\n  Efeito: {t.efeito}" for t in resultado.analise_detalhada.tecnicas_persuasao]) + f"""
-
-⚠️ O QUE ESTÁ FALTANDO
-""" + "\n• ".join(resultado.analise_detalhada.lacunas) + f"""
-
-❤️ ASPECTOS EMOCIONAIS
-""" + "\n• ".join(resultado.analise_detalhada.aspectos_emocionais) + f"""
-
-👤 QUEM FALA E INTENÇÃO
-Agente e alvo: {resultado.analise_detalhada.agente_e_alvo}
-Intenção real: {resultado.analise_detalhada.intencao}
-Outro lado da história: {resultado.analise_detalhada.outro_lado}
-
-📝 VERSÃO MAIS EQUILIBRADA
-{resultado.analise_detalhada.versao_neutra}
-
-🔍 JUSTIFICATIVA
-{resultado.analise_detalhada.justificativa}
-
-🏁 DIAGNÓSTICO FINAL
-{resultado.diagnostico_final}
-"""
-        st.code(texto_copia, language=None)
-        st.success("✅ Relatório copiado! Agora é só colar onde quiser.")
 
 # ==================== CONFIGURAÇÃO ====================
 st.set_page_config(page_title="M.O.M.A.", page_icon="🧠", layout="centered")
