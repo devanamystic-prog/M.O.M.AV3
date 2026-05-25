@@ -64,7 +64,7 @@ def validar_json_pydantic(texto_resposta: str) -> MomaResponse:
     json_str = match.group(0)
     return MomaResponse.model_validate_json(json_str)
 
-# ==================== EXIBIÇÃO BONITA ====================
+# ==================== EXIBIÇÃO BONITA (mantida exatamente igual) ====================
 def exibir_analise(resultado: MomaResponse):
     st.success("✅ Auditoria concluída com sucesso!")
     
@@ -110,40 +110,43 @@ def exibir_analise(resultado: MomaResponse):
     st.markdown('<h3 style="color:#4CAF50;">🏁 Diagnóstico final</h3>', unsafe_allow_html=True)
     st.markdown(f"**{resultado.diagnostico_final}**")
 
+    # ==================== BOTÃO DE COPIAR (AGORA MAIS LIMPO) ====================
     st.divider()
     if st.button("📋 Copiar relatório completo", type="primary", use_container_width=True):
         texto_copia = f"""🧠 M.O.M.A. - Análise Completa
 
-📋 Resumo:
+📋 RESUMO
 {resultado.veredito_resumo}
 
-✅ Fatos principais:
+✅ FATOS PRINCIPAIS
 """ + "\n• ".join(resultado.analise_detalhada.fatos) + f"""
 
-🎯 Técnicas de persuasão:
+🎯 TÉCNICAS DE PERSUASÃO
 """ + "\n".join([f"• {t.tecnica}\n  Exemplo: {t.exemplo}\n  Efeito: {t.efeito}" for t in resultado.analise_detalhada.tecnicas_persuasao]) + f"""
 
-⚠️ O que está faltando:
+⚠️ O QUE ESTÁ FALTANDO
 """ + "\n• ".join(resultado.analise_detalhada.lacunas) + f"""
 
-❤️ Aspectos emocionais:
+❤️ ASPECTOS EMOCIONAIS
 """ + "\n• ".join(resultado.analise_detalhada.aspectos_emocionais) + f"""
 
-👤 Agente e alvo: {resultado.analise_detalhada.agente_e_alvo}
+👤 QUEM FALA E INTENÇÃO
+Agente e alvo: {resultado.analise_detalhada.agente_e_alvo}
 Intenção real: {resultado.analise_detalhada.intencao}
-Outro lado: {resultado.analise_detalhada.outro_lado}
+Outro lado da história: {resultado.analise_detalhada.outro_lado}
 
-📝 Versão equilibrada:
+📝 VERSÃO MAIS EQUILIBRADA
 {resultado.analise_detalhada.versao_neutra}
 
-🔍 Justificativa:
+🔍 JUSTIFICATIVA
 {resultado.analise_detalhada.justificativa}
 
-🏁 Diagnóstico final:
+🏁 DIAGNÓSTICO FINAL
 {resultado.diagnostico_final}
 """
+
         st.code(texto_copia, language=None)
-        st.success("✅ Relatório copiado!")
+        st.success("✅ Copiado! Agora é só colar no WhatsApp ou onde quiser.")
 
 # ==================== CONFIGURAÇÃO ====================
 st.set_page_config(page_title="M.O.M.A.", page_icon="🧠", layout="centered")
@@ -175,39 +178,10 @@ st.caption("Análise clara e honesta")
 
 opcao = st.radio("Tipo de entrada:", ["Texto", "Imagem (print)"], horizontal=True)
 
-# ==================== CAIXA DE TEXTO ====================
 if opcao == "Texto":
     entrada = st.text_area("Cole o texto para auditoria aqui:", height=300, placeholder="Cole aqui a matéria, notícia ou texto que você quer analisar...")
     if st.button("🧠 Auditar Texto", type="primary"):
         if entrada.strip():
             with st.spinner("Analisando..."):
                 try:
-                    response = model.generate_content(entrada)
-                    resultado = validar_json_pydantic(response.text)
-                    exibir_analise(resultado)
-                except Exception as e:
-                    st.error(f"Erro ao processar: {e}")
-        else:
-            st.warning("Insira um texto para analisar.")
-
-else:
-    arquivo = st.file_uploader("Envie um print ou imagem:", type=["png", "jpg", "jpeg", "webp"])
-    if st.button("🧠 Auditar Imagem", type="primary"):
-        if arquivo:
-            with st.spinner("Analisando imagem..."):
-                try:
-                    img = Image.open(arquivo)
-                    st.image(img, caption="Imagem enviada", use_column_width=True)
-
-                    prompt_imagem = "Faça uma auditoria completa desta imagem seguindo exatamente o formato JSON do protocolo M.O.M.A."
-
-                    response = model.generate_content([prompt_imagem, img])
-                    resultado = validar_json_pydantic(response.text)
-                    exibir_analise(resultado)
-                except Exception as e:
-                    st.error(f"Erro na análise da imagem: {e}")
-        else:
-            st.warning("Envie uma imagem para analisar.")
-
-if st.button("🔄 Limpar tudo"):
-    st.rerun()
+                    response = model.generate_content
