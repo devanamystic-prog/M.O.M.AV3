@@ -4,31 +4,40 @@ from PIL import Image
 import json
 import re
 
-# ==================== PROMPT M.O.M.A. ====================
+# ==================== PROMPT M.O.M.A. (VERSÃO HUMANA) ====================
 MOMA_PROMPT = """
 CONTEXTO:
-Você é o M.O.M.A. (Media Objectivity & Manipulation Auditor), motor de análise forense de narrativas.
-Sua função é auditar qualquer texto ou imagem através de um protocolo rígido de 10 camadas lógicas, com neutralidade absoluta e rigor máximo.
+Você é o M.O.M.A., um auditor honesto e fácil de entender de conteúdos da internet.
 
-Responda APENAS com um JSON válido, sem nenhuma explicação adicional antes ou depois.
+Sua missão é analisar qualquer texto ou imagem e entregar uma análise clara, imparcial e em português simples, como se você estivesse explicando para uma amiga.
+
+Use sempre linguagem natural, direta e fácil. Nada de termos técnicos complicados.
+
+Responda APENAS com um JSON válido, sem nenhuma explicação antes ou depois.
 
 ESQUEMA JSON OBRIGATÓRIO:
+
 {
   "indice_distorcao": 0,
-  "veredito_resumo": "String curta e objetiva",
-  "protocolo_10_camadas": {
-    "c1_fatos": ["..."],
-    "c2_inducao": [{"trecho_exato": "...", "analise": "..."}],
-    "c3_persuasao": [{"tecnica": "...", "trecho": "...", "efeito": "..."}],
-    "c4_lacunas": ["..."],
-    "c5_emocional": ["..."],
-    "c6_agencia": {"agente_ativo": "...", "alvo_passivo": "..."},
-    "c7_intencao": "...",
-    "c8_outro_lado": "...",
-    "c9_reescrita_neutra": "...",
-    "c10_calibracao_justificativa": "..."
+  "veredito_resumo": "Resumo curto e direto do que você encontrou",
+  "analise_detalhada": {
+    "fatos": ["Aqui você lista os fatos principais de forma simples"],
+    "tecnicas_persuasao": [
+      {
+        "tecnica": "Nome simples da técnica",
+        "exemplo": "Trecho que usa essa técnica",
+        "efeito": "O que isso causa na pessoa que lê"
+      }
+    ],
+    "lacunas": ["O que está faltando ou sendo omitido, explicado de forma clara"],
+    "aspectos_emocionais": ["Como o conteúdo mexe com as emoções da gente"],
+    "agente_e_alvo": "Quem está falando e quem é o público-alvo",
+    "intencao": "Qual é a intenção real por trás desse conteúdo",
+    "outro_lado": "O que a outra versão da história diria",
+    "versao_neutra": "Uma versão mais equilibrada e justa do mesmo conteúdo",
+    "justificativa": "Por que você chegou nessa conclusão"
   },
-  "diagnostico_final": "Conclusão forense detalhada."
+  "diagnostico_final": "Conclusão clara, objetiva e em um parágrafo só"
 }
 """
 
@@ -62,7 +71,7 @@ except Exception as e:
 st.image("logo.PNG", width=300)
 st.title("🧠 M.O.M.A.")
 st.markdown("*Media Objectivity & Manipulation Auditor*")
-st.caption("Protocolo Forense de 10 Camadas")
+st.caption("Análise clara e honesta")
 
 opcao = st.radio("Tipo de entrada:", ["Texto", "Imagem (print)"], horizontal=True)
 
@@ -71,66 +80,41 @@ if opcao == "Texto":
     entrada = st.text_area("Cole o texto para auditoria:", height=300)
     if st.button("🧠 Auditar Texto", type="primary"):
         if entrada.strip():
-            with st.spinner("Executando protocolo forense completo..."):
+            with st.spinner("Analisando de forma clara e honesta..."):
                 try:
                     response = model.generate_content(entrada)
                     txt = response.text.strip()
 
-                    # Parser robusto
                     json_match = re.search(r'\{.*\}', txt, re.DOTALL)
                     if json_match:
                         txt = json_match.group(0)
-                    
+
                     resultado = json.loads(txt)
-                    st.success("✅ Auditoria concluída com sucesso")
+
+                    st.success("✅ Auditoria concluída")
                     st.json(resultado)
-                    
-                    # Botão copiar
-                    st.code(txt, language="json")
-                    st.caption("Copie o JSON acima se quiser salvar")
 
                 except Exception as e:
-                    st.error(f"Erro ao processar resposta: {e}")
-                    st.text_area("Resposta bruta do Gemini (para debug):", txt, height=200)
+                    st.error(f"Erro ao processar: {e}")
         else:
-            st.warning("Insira um texto para iniciar a auditoria.")
+            st.warning("Insira um texto para analisar.")
 
 # ==================== ANÁLISE DE IMAGEM ====================
 else:
     arquivo = st.file_uploader("Envie um print ou imagem:", type=["png", "jpg", "jpeg", "webp"])
     if st.button("🧠 Auditar Imagem", type="primary"):
         if arquivo:
-            with st.spinner("Analisando imagem com protocolo visual completo..."):
+            with st.spinner("Analisando imagem de forma clara..."):
                 try:
                     img = Image.open(arquivo)
                     st.image(img, caption="Imagem enviada", use_column_width=True)
 
-                    # Prompt reforçado para imagem
-                    prompt_imagem = "Faça uma auditoria forense completa desta imagem seguindo rigorosamente o protocolo M.O.M.A. de 10 camadas."
+                    prompt_imagem = "Faça uma auditoria clara e honesta desta imagem seguindo o protocolo M.O.M.A."
 
                     response = model.generate_content([prompt_imagem, img])
                     txt = response.text.strip()
 
-                    # Mesmo parser robusto
                     json_match = re.search(r'\{.*\}', txt, re.DOTALL)
-                    if json_match:
-                        txt = json_match.group(0)
-
-                    resultado = json.loads(txt)
-                    st.success("✅ Auditoria visual concluída")
-                    st.json(resultado)
-                    st.code(txt, language="json")
-
-                except Exception as e:
-                    st.error(f"Erro na análise da imagem: {e}")
-                    if 'txt' in locals():
-                        st.text_area("Resposta bruta:", txt, height=300)
-        else:
-            st.warning("Envie uma imagem para iniciar a auditoria.")
-
-# Botão limpar
-if st.button("🔄 Limpar tudo"):
-    st.rerun()
 
 
 
