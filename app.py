@@ -52,7 +52,7 @@ def validar_json_pydantic(texto_resposta: str) -> MomaResponse:
     json_str = match.group(0)
     return MomaResponse.model_validate_json(json_str)
 
-# ==================== EXIBIÇÃO BONITA + BOTÃO COPIAR ====================
+# ==================== EXIBIÇÃO + BOTÃO COPIAR ====================
 def exibir_analise(resultado: MomaResponse):
     st.success("✅ Auditoria concluída com sucesso!")
     
@@ -98,7 +98,6 @@ def exibir_analise(resultado: MomaResponse):
     st.markdown('<h3 style="color:#4CAF50;">🏁 Diagnóstico final</h3>', unsafe_allow_html=True)
     st.markdown(f"**{resultado.diagnostico_final}**")
 
-    # Botão de copiar
     st.divider()
     if st.button("📋 Copiar relatório completo", type="primary", use_container_width=True):
         texto_copia = f"""🧠 M.O.M.A. - Análise Completa
@@ -132,21 +131,68 @@ Outro lado: {resultado.analise_detalhada.outro_lado}
 {resultado.diagnostico_final}
 """
         st.code(texto_copia, language=None)
-        st.success("✅ Relatório copiado! Toque longo no texto acima e copie.")
+        st.success("✅ Relatório copiado!")
 
-# ==================== CONFIGURAÇÃO DO APP ====================
+# ==================== CONFIGURAÇÃO ====================
 st.set_page_config(page_title="M.O.M.A.", page_icon="🧠", layout="centered")
 
 try:
-    api_key =
+    api_key = st.secrets["GOOGLE_API_KEY"]
+    genai.configure(api_key=api_key)
 
+    generation_config = {
+        "temperature": 0.0,
+        "top_p": 0.95,
+        "response_mime_type": "application/json"
+    }
 
+    model = genai.GenerativeModel(
+        model_name="gemini-3.5-flash",
+        system_instruction=MOMA_PROMPT,
+        generation_config=generation_config
+    )
+except Exception as e:
+    st.error(f"Erro ao configurar API: {e}")
+    st.stop()
 
+# ==================== INTERFACE ====================
+st.image("logo.PNG", width=300)
+st.title("🧠 M.O.M.A.")
+st.markdown("*Media Objectivity & Manipulation Auditor*")
+st.caption("Análise clara e honesta")
 
+opcao = st.radio("Tipo de entrada:", ["Texto", "Imagem (print)"], horizontal=True)
 
+if opcao == "Texto":
+    entrada = st.text_area("Cole o texto para auditoria:", height=300)
+    if st.button("🧠 Auditar Texto", type="primary"):
+        if entrada.strip():
+            with st.spinner("Analisando..."):
+                try:
+                    response = model.generate_content(entrada)
+                    resultado = validar_json_pydantic(response.text)
+                    exibir_analise(resultado)
+                except Exception as e:
+                    st.error(f"Erro ao processar: {e}")
+        else:
+            st.warning("Insira um texto para analisar.")
 
-    
+else:
+    arquivo = st.file_uploader("Envie um print ou imagem:", type=["png", "jpg", "jpeg", "webp"])
+    if st.button("🧠 Auditar Imagem", type="primary"):
+        if arquivo:
+            with st.spinner("Analisando imagem..."):
+                try:
+                    img = Image.open(arquivo)
+                    st.image(img, caption="Imagem enviada", use_column_width=True)
+                    prompt_imagem = "Faça uma auditoria clara e honesta desta imagem seguindo o protocolo M.O.M.A."
+                    response = model.generate_content([prompt_imagem, img])
+                    resultado = validar_json_pydantic(response.text)
+                    exibir_analise(resultado)
+                except Exception as e:
+                    st.error(f"Erro na análise da imagem: {e}")
+        else:
+            st.warning("Envie uma imagem para analisar.")
 
-  
-
-  
+if st.button("🔄 Limpar tudo"):
+    st.rerun()
