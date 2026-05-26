@@ -140,11 +140,4 @@ st.caption("Análise clara e honesta")
 opcao = st.radio("Tipo de entrada:", ["Texto", "Imagem (print)"], horizontal=True)
 
 if opcao == "Texto":
-    entrada = st.text_area("Cole o texto para auditoria aqui:", height=300, placeholder="Cole aqui a matéria, notícia ou texto que você quer analisar...")
-    if st.button("🧠 Auditar Texto", type="primary"):
-        if entrada.strip():
-            with st.spinner("Analisando..."):
-                try:
-                    response = model.generate_content(entrada)
-                    resultado = validar_json_pydantic(response.text)
-                    exibir_analise(resultado)
+    entrada = st.text_area("Cole o texto para auditor
