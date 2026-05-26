@@ -63,8 +63,30 @@ def validar_json_pydantic(texto_resposta: str) -> MomaResponse:
     json_str = re.sub(r'^```(?:json)?\s*|\s*```$', '', json_str, flags=re.MULTILINE | re.IGNORECASE)
     return MomaResponse.model_validate_json(json_str)
 
-# ==================== EXIBIÇÃO BONITA ====================
+# ==================== EXIBIÇÃO BONITA + ÍNDICE DE DISTORÇÃO ====================
 def exibir_analise(resultado: MomaResponse):
+    # === ÍNDICE DE DISTORÇÃO (no topo) ===
+    indice = resultado.indice_distorcao
+    if indice <= 30:
+        cor = "🟢"
+        nivel = "Baixa distorção"
+    elif indice <= 70:
+        cor = "🟡"
+        nivel = "Distorção moderada"
+    else:
+        cor = "🔴"
+        nivel = "Alta distorção"
+
+    st.markdown(f"""
+## 👁️ Índice Narrativo
+
+# {cor} {indice}/100
+
+### {nivel}
+""")
+    st.divider()
+
+    # === O RESTO FICA EXATAMENTE IGUAL AO QUE VOCÊ GOSTOU ===
     st.success("✅ Auditoria concluída com sucesso!")
     
     st.markdown('<h3 style="color:#4CAF50;">📋 Resumo</h3>', unsafe_allow_html=True)
@@ -149,10 +171,7 @@ if opcao == "Texto":
                     resultado = validar_json_pydantic(response.text)
                     exibir_analise(resultado)
                 except Exception as e:
-                    if "quota" in str(e).lower() or "limit" in str(e).lower() or "exceeded" in str(e).lower() or "429" in str(e):
-                        st.error("🎟️ Ops! Hoje o limite de análises foi atingido.\nTente novamente amanhã!")
-                    else:
-                        st.error(f"Erro ao processar: {e}")
+                    st.error(f"Erro ao processar: {e}")
         else:
             st.warning("Insira um texto para analisar.")
 
@@ -170,12 +189,8 @@ else:
                     response = model.generate_content([prompt_imagem, img])
                     resultado = validar_json_pydantic(response.text)
                     exibir_analise(resultado)
-
                 except Exception as e:
-                    if "quota" in str(e).lower() or "limit" in str(e).lower() or "exceeded" in str(e).lower() or "429" in str(e):
-                        st.error("🎟️ Ops! Hoje o limite de análises de imagens foi atingido.\nTente usar a opção Texto ou volte amanhã!")
-                    else:
-                        st.error(f"Erro na análise da imagem: {e}")
+                    st.error(f"Erro na análise da imagem: {e}")
         else:
             st.warning("Envie uma imagem para analisar.")
 
