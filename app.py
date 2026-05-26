@@ -65,7 +65,6 @@ def validar_json_pydantic(texto_resposta: str) -> MomaResponse:
 
 # ==================== EXIBIÇÃO BONITA + ÍNDICE ====================
 def exibir_analise(resultado: MomaResponse):
-    # === ÍNDICE DE DISTORÇÃO ===
     indice = resultado.indice_distorcao
     if indice <= 30:
         cor = "🟢"
@@ -156,7 +155,7 @@ st.title("🧠 M.O.M.A.")
 st.markdown("*Media Objectivity & Manipulation Auditor*")
 st.caption("Análise clara e honesta")
 
-opcao = st.radio("Tipo de entrada:", ["Texto", "Imagem (print)"], horizontal=True)
+opcao = st.radio("Tipo de entrada:", ["Texto", "Imagem (impressão)"], horizontal=True)
 
 if opcao == "Texto":
     entrada = st.text_area("Cole o texto para auditoria aqui:", height=300, placeholder="Cole aqui a matéria, notícia ou texto que você quer analisar...")
@@ -169,7 +168,7 @@ if opcao == "Texto":
                     exibir_analise(resultado)
                 except Exception as e:
                     if "quota" in str(e).lower() or "limit" in str(e).lower() or "429" in str(e):
-                        st.error("🎟️ Hoje o limite de análises foi atingido.\nUse Texto ou volte amanhã!")
+                        st.error("🎟️ Hoje o limite de análises de texto foi atingido.\nUse Imagem ou volte amanhã!")
                     else:
                         st.error(f"Erro ao processar: {e}")
         else:
