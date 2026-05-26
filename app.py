@@ -63,30 +63,8 @@ def validar_json_pydantic(texto_resposta: str) -> MomaResponse:
     json_str = re.sub(r'^```(?:json)?\s*|\s*```$', '', json_str, flags=re.MULTILINE | re.IGNORECASE)
     return MomaResponse.model_validate_json(json_str)
 
-# ==================== EXIBIÇÃO BONITA + ÍNDICE DE DISTORÇÃO ====================
+# ==================== EXIBIÇÃO BONITA ====================
 def exibir_analise(resultado: MomaResponse):
-    # === ÍNDICE DE DISTORÇÃO (no topo, como você pediu) ===
-    indice = resultado.indice_distorcao
-    if indice <= 30:
-        cor = "🟢"
-        nivel = "Baixa distorção"
-    elif indice <= 70:
-        cor = "🟡"
-        nivel = "Distorção moderada"
-    else:
-        cor = "🔴"
-        nivel = "Alta distorção"
-
-    st.markdown(f"""
-## 👁️ Índice Narrativo
-
-# {cor} {indice}/100
-
-### {nivel}
-""")
-    st.divider()
-
-    # === O RESTO FICA EXATAMENTE IGUAL AO QUE VOCÊ GOSTOU ===
     st.success("✅ Auditoria concluída com sucesso!")
     
     st.markdown('<h3 style="color:#4CAF50;">📋 Resumo</h3>', unsafe_allow_html=True)
@@ -170,29 +148,3 @@ if opcao == "Texto":
                     response = model.generate_content(entrada)
                     resultado = validar_json_pydantic(response.text)
                     exibir_analise(resultado)
-                except Exception as e:
-                    st.error(f"Erro ao processar: {e}")
-        else:
-            st.warning("Insira um texto para analisar.")
-
-else:
-    arquivo = st.file_uploader("Envie um print ou imagem:", type=["png", "jpg", "jpeg", "webp"])
-    if st.button("🧠 Auditar Imagem", type="primary"):
-        if arquivo:
-            with st.spinner("Analisando imagem..."):
-                try:
-                    img = Image.open(arquivo)
-                    st.image(img, caption="Imagem enviada", use_column_width=True)
-
-                    prompt_imagem = "Faça uma auditoria completa desta imagem seguindo exatamente o formato JSON do protocolo M.O.M.A."
-
-                    response = model.generate_content([prompt_imagem, img])
-                    resultado = validar_json_pydantic(response.text)
-                    exibir_analise(resultado)
-                except Exception as e:
-                    st.error(f"Erro na análise da imagem: {e}")
-        else:
-            st.warning("Envie uma imagem para analisar.")
-
-if st.button("🔄 Limpar tudo"):
-    st.rerun()
