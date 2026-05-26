@@ -149,7 +149,10 @@ if opcao == "Texto":
                     resultado = validar_json_pydantic(response.text)
                     exibir_analise(resultado)
                 except Exception as e:
-                    st.error(f"Erro ao processar: {e}")
+                    if "quota" in str(e).lower() or "limit" in str(e).lower() or "exceeded" in str(e).lower() or "429" in str(e):
+                        st.error("🎟️ Ops! Hoje o limite de análises foi atingido.\nTente novamente amanhã!")
+                    else:
+                        st.error(f"Erro ao processar: {e}")
         else:
             st.warning("Insira um texto para analisar.")
 
@@ -169,7 +172,6 @@ else:
                     exibir_analise(resultado)
 
                 except Exception as e:
-                    # Mensagem amigável quando o limite é atingido
                     if "quota" in str(e).lower() or "limit" in str(e).lower() or "exceeded" in str(e).lower() or "429" in str(e):
                         st.error("🎟️ Ops! Hoje o limite de análises de imagens foi atingido.\nTente usar a opção Texto ou volte amanhã!")
                     else:
