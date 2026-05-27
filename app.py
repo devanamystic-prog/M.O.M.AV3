@@ -97,4 +97,22 @@ def exibir_analise(resultado: MomaResponse):
         st.markdown(f"• {fato}")
     st.divider()
     
-    st.markdown('<h3 style="color:#9C
+    st.markdown('<h3 style="color:#9C27B0;">🎯 Técnicas de persuasão</h3>', unsafe_allow_html=True)
+    for tec in resultado.analise_detalhada.tecnicas_persuasao:
+        st.markdown(f"**{tec.tecnica}**")
+        st.markdown(f"Exemplo: {tec.exemplo}")
+        st.markdown(f"Efeito: {tec.efeito}")
+        st.divider()
+    
+    st.markdown('<h3 style="color:#FF9800;">⚠️ O que está faltando</h3>', unsafe_allow_html=True)
+    for lacuna in resultado.analise_detalhada.lacunas:
+        st.markdown(f"• {lacuna}")
+    st.divider()
+    
+    st.markdown('<h3 style="color:#E91E63;">❤️ Aspectos emocionais</h3>', unsafe_allow_html=True)
+    for emo in resultado.analise_detalhada.aspectos_emocionais:
+        st.markdown(f"• {emo}")
+    st.divider()
+    
+    st.markdown('<h3 style="color:#00BCD4;">👤 Quem fala e intenção</h3>', unsafe_allow_html=True)
+    st.markdown(f"**Agente e alvo:** {resultado.analise_d
