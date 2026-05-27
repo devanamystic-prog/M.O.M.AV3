@@ -142,7 +142,7 @@ try:
     }
 
     model = genai.GenerativeModel(
-        model_name="gemini-3.5-flash",   # ← Modelo mais novo e melhor
+        model_name="gemini-2.0-flash",   # ← Voltamos pro modelo estável
         system_instruction=MOMA_PROMPT,
         generation_config=generation_config
     )
