@@ -65,7 +65,8 @@ def validar_json_pydantic(texto_resposta: str) -> MomaResponse:
 
 # ==================== EXIBIÇÃO BONITA + ÍNDICE ====================
 def exibir_analise(resultado: MomaResponse):
-    indice = resultado.indice_distorcao
+    indice = max(0, min(100, resultado.indice_distorcao))
+    
     if indice <= 30:
         cor = "🟢"
         nivel = "Baixa distorção"
@@ -141,7 +142,7 @@ try:
     }
 
     model = genai.GenerativeModel(
-        model_name="gemini-3.5-flash",
+        model_name="gemini-1.5-flash",
         system_instruction=MOMA_PROMPT,
         generation_config=generation_config
     )
@@ -158,7 +159,7 @@ st.caption("Análise clara e honesta")
 opcao = st.radio("Tipo de entrada:", ["Texto", "Imagem (impressão)"], horizontal=True)
 
 if opcao == "Texto":
-    entrada = st.text_area("Cole o texto para auditoria aqui:", height=300, placeholder="Cole aqui a matéria, notícia ou texto que você quer analisar...")
+    entrada = st.text_area("Cole o texto para auditoria aqui:", height=300, placeholder="Cole aqui a matéria...")
     if st.button("🧠 Auditar Texto", type="primary"):
         if entrada.strip():
             with st.spinner("Analisando..."):
@@ -198,3 +199,4 @@ else:
 
 if st.button("🔄 Limpar tudo"):
     st.rerun()
+    
