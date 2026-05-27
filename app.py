@@ -115,4 +115,26 @@ def exibir_analise(resultado: MomaResponse):
     st.divider()
     
     st.markdown('<h3 style="color:#00BCD4;">👤 Quem fala e intenção</h3>', unsafe_allow_html=True)
-    st.markdown(f"**Agente e alvo:** {resultado.analise_d
+    st.markdown(f"**Agente e alvo:** {resultado.analise_detalhada.agente_e_alvo}")
+    st.markdown(f"**Intenção real:** {resultado.analise_detalhada.intencao}")
+    st.markdown(f"**Outro lado da história:** {resultado.analise_detalhada.outro_lado}")
+    st.divider()
+    
+    st.markdown('<h3 style="color:#2E7D32;">📝 Versão mais equilibrada</h3>', unsafe_allow_html=True)
+    st.markdown(resultado.analise_detalhada.versao_neutra)
+    st.divider()
+    
+    st.markdown('<h3 style="color:#FF5722;">🔍 Justificativa</h3>', unsafe_allow_html=True)
+    st.markdown(resultado.analise_detalhada.justificativa)
+    
+    st.markdown('<h3 style="color:#4CAF50;">🏁 Diagnóstico final</h3>', unsafe_allow_html=True)
+    st.markdown(f"**{resultado.diagnostico_final}**")
+
+# ==================== CONFIGURAÇÃO ====================
+try:
+    api_key = st.secrets["GOOGLE_API_KEY"]
+    genai.configure(api_key=api_key)
+
+    generation_config = {
+        "temperature": 0.0,
+        "top_p": 0.95,
