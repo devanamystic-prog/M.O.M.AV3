@@ -65,16 +65,14 @@ def validar_json_pydantic(texto_resposta: str) -> MomaResponse:
 
 # ==================== EXIBIÇÃO BONITA + ÍNDICE ====================
 def exibir_analise(resultado: MomaResponse):
-    indice = resultado.indice_distorcao
+    indice = max(0, min(100, resultado.indice_distorcao))
+    
     if indice <= 30:
-        cor = "🟢"
-        nivel = "Baixa distorção"
+        cor, nivel = "🟢", "Baixa distorção"
     elif indice <= 70:
-        cor = "🟡"
-        nivel = "Distorção moderada"
+        cor, nivel = "🟡", "Distorção moderada"
     else:
-        cor = "🔴"
-        nivel = "Alta distorção"
+        cor, nivel = "🔴", "Alta distorção"
 
     st.markdown(f"""
 ## 👁️ Índice Narrativo
@@ -129,7 +127,7 @@ def exibir_analise(resultado: MomaResponse):
     st.markdown('<h3 style="color:#4CAF50;">🏁 Diagnóstico final</h3>', unsafe_allow_html=True)
     st.markdown(f"**{resultado.diagnostico_final}**")
 
-# ==================== CONFIGURAÇÃO ====================
+# ==================== CONFIGURAÇÃO DA API ====================
 try:
     api_key = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=api_key)
@@ -141,7 +139,7 @@ try:
     }
 
     model = genai.GenerativeModel(
-        model_name="gemini-3.5-flash",
+        model_name="gemini-1.5-flash",
         system_instruction=MOMA_PROMPT,
         generation_config=generation_config
     )
@@ -168,7 +166,7 @@ if opcao == "Texto":
                     exibir_analise(resultado)
                 except Exception as e:
                     if "quota" in str(e).lower() or "limit" in str(e).lower() or "429" in str(e):
-                        st.error("🎟️ Hoje o limite de análises de texto foi atingido.\nUse Imagem ou volte amanhã!")
+                        st.error("🎟️ Hoje o limite de análises foi atingido.\nUse Texto ou volte amanhã!")
                     else:
                         st.error(f"Erro ao processar: {e}")
         else:
