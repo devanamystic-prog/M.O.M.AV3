@@ -199,4 +199,3 @@ else:
 
 if st.button("🔄 Limpar tudo"):
     st.rerun()
-    
