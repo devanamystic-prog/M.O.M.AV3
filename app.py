@@ -142,7 +142,7 @@ try:
     }
 
     model = genai.GenerativeModel(
-        model_name="gemini-1.5-flash",
+        model_name="gemini-1.5-flash-latest",   # ← Mudança aqui (era o problema)
         system_instruction=MOMA_PROMPT,
         generation_config=generation_config
     )
