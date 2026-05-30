@@ -65,8 +65,7 @@ def validar_json_pydantic(texto_resposta: str) -> MomaResponse:
 
 # ==================== EXIBIÇÃO BONITA + ÍNDICE ====================
 def exibir_analise(resultado: MomaResponse):
-    indice = max(0, min(100, resultado.indice_distorcao))
-    
+    indice = resultado.indice_distorcao
     if indice <= 30:
         cor = "🟢"
         nivel = "Baixa distorção"
@@ -142,7 +141,7 @@ try:
     }
 
     model = genai.GenerativeModel(
-        model_name="gemini-2.0-flash",   # ← Voltamos pro modelo estável
+        model_name="gemini-3.5-flash",
         system_instruction=MOMA_PROMPT,
         generation_config=generation_config
     )
